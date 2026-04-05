@@ -1,13 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
 import {
   loadInstitutions, saveInstitution, deleteInstitution,
   createInstitution, getOverallStats, getInstitutionScore, getScoreColor,
 } from "../lib/store";
 import { TASKS } from "../lib/tasks";
+import { isAdmin, logoutAdmin } from "../lib/auth";
 import InstitutionCard from "../components/InstitutionCard";
 import InstitutionDetail from "../components/InstitutionDetail";
 import AddInstitutionModal from "../components/AddInstitutionModal";
+import AdminLogin from "../components/AdminLogin";
 
 export default function Home() {
   const [institutions, setInstitutions] = useState([]);
@@ -17,9 +19,11 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
 
-  // Load from Supabase on mount
   useEffect(() => {
+    setAdminUnlocked(isAdmin());
     loadInstitutions().then((data) => {
       setInstitutions(data);
       setLoading(false);
@@ -75,7 +79,7 @@ export default function Home() {
       </Head>
 
       <div style={{ minHeight: "100vh", background: "#0a0a0f" }}>
-        {/* Top nav */}
+        {/* Nav */}
         <nav style={{ borderBottom: "0.5px solid #ffffff0d", padding: "0 28px", height: 56, display: "flex", alignItems: "center", gap: 16, background: "#0d0d14" }}>
           <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 16, color: "#f0f0f5", letterSpacing: -0.5 }}>
             <span style={{ color: "#6366f1" }}>NIBSS</span> Integration Tracker
@@ -84,17 +88,28 @@ export default function Home() {
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "#334155" }}>
             {TASKS.length} tasks · weighted 100%
           </div>
-          <button
-            onClick={() => setShowAdd(true)}
-            style={{ background: "#6366f1", border: "none", color: "#fff", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 13 }}
-          >
-            + Add Institution
-          </button>
+          {adminUnlocked ? (
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "#22c55e" }}>● Admin</span>
+              <button
+                onClick={() => setShowAdd(true)}
+                style={{ background: "#6366f1", border: "none", color: "#fff", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 13 }}
+              >+ Add Institution</button>
+              <button
+                onClick={() => { logoutAdmin(); setAdminUnlocked(false); }}
+                style={{ background: "transparent", border: "0.5px solid #ffffff18", color: "#9999aa", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontFamily: "var(--font-mono)", fontSize: 12 }}
+              >Lock</button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAdminLogin(true)}
+              style={{ background: "transparent", border: "0.5px solid #ffffff18", color: "#55556a", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontFamily: "var(--font-mono)", fontSize: 12 }}
+            >Admin</button>
+          )}
         </nav>
 
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 28px" }}>
 
-          {/* Loading state */}
           {loading && (
             <div style={{ textAlign: "center", padding: "80px 0", color: "#334155", fontFamily: "var(--font-mono)", fontSize: 13 }}>
               Loading institutions...
@@ -161,11 +176,13 @@ export default function Home() {
                   {filtered.map((inst) => (
                     <div key={inst.id} style={{ position: "relative" }}>
                       <InstitutionCard institution={inst} onClick={() => setSelected(inst)} />
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setDeleteConfirm(inst.id); }}
-                        style={{ position: "absolute", top: 14, right: 14, background: "transparent", border: "none", color: "#334155", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 4, zIndex: 2 }}
-                        title="Delete"
-                      >✕</button>
+                      {adminUnlocked && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setDeleteConfirm(inst.id); }}
+                          style={{ position: "absolute", top: 14, right: 14, background: "transparent", border: "none", color: "#334155", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 4, zIndex: 2 }}
+                          title="Delete"
+                        >✕</button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -180,13 +197,11 @@ export default function Home() {
                       ? "Add your first institution to start tracking integration progress."
                       : "Try a different search term."}
                   </div>
-                  {institutions.length === 0 && (
+                  {institutions.length === 0 && adminUnlocked && (
                     <button
                       onClick={() => setShowAdd(true)}
                       style={{ background: "#6366f1", border: "none", color: "#fff", borderRadius: 8, padding: "10px 24px", cursor: "pointer", fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 14 }}
-                    >
-                      + Add First Institution
-                    </button>
+                    >+ Add First Institution</button>
                   )}
                 </div>
               )}
@@ -196,6 +211,13 @@ export default function Home() {
       </div>
 
       {showAdd && <AddInstitutionModal onAdd={handleAdd} onClose={() => setShowAdd(false)} />}
+
+      {showAdminLogin && (
+        <AdminLogin
+          onSuccess={() => { setAdminUnlocked(true); setShowAdminLogin(false); }}
+          onCancel={() => setShowAdminLogin(false)}
+        />
+      )}
 
       {deleteConfirm && (
         <div style={{ position: "fixed", inset: 0, background: "#0a0a0fcc", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
