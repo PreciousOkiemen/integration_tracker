@@ -1,4 +1,4 @@
-# NIBSS Integration Tracker
+# Integration Tracker
 
 A dashboard for tracking FI integration progress across institutions, using a weighted cumulative scoring system that sums to **100%**.
 
@@ -15,10 +15,10 @@ A dashboard for tracking FI integration progress across institutions, using a we
 1. **Connectivity** — Bi-Directional Connectivity
 2. **ACMT / PACS Basic** — Core outbound messages
 3. **ACMT / PACS Negative** — Error-path scenarios
-4. **PAIN / PACS / CAMT – FI→NIBSS** — Extended outbound
-5. **PAIN / PACS / CAMT – NIBSS→FI** — Extended inbound
-6. **PAIN / PACS / CAMT – FI→NIBSS Negative** — Negative outbound
-7. **PAIN / PACS / CAMT – NIBSS→FI Negative** — Negative inbound
+4. **PAIN / PACS / CAMT – FI→NI** — Extended outbound
+5. **PAIN / PACS / CAMT – NI→FI** — Extended inbound
+6. **PAIN / PACS / CAMT – FI→NI Negative** — Negative outbound
+7. **PAIN / PACS / CAMT – NI→FI Negative** — Negative inbound
 
 ## Features
 
