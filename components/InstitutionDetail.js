@@ -3,11 +3,11 @@ import { TASKS, groupedTasks } from "../lib/tasks";
 import { getInstitutionScore, getScoreColor } from "../lib/store";
 import ScoreRing from "./ScoreRing";
 
-const STATUS_OPTIONS = ["pending", "pass", "fail", "blocked"];
+const STATUS_OPTIONS = ["pending", "pass", "na", "blocked"];
 
 const STATUS_STYLE = {
   pass:    { bg: "#22c55e18", border: "#22c55e50", text: "#22c55e", label: "Pass" },
-  fail:    { bg: "#ef444418", border: "#ef444450", text: "#ef4444", label: "Fail" },
+  na:    { bg: "#ef444418", border: "#ef444450", text: "#ef4444", label: "Fail" },
   blocked: { bg: "#f59e0b18", border: "#f59e0b50", text: "#f59e0b", label: "Blocked" },
   pending: { bg: "#ffffff0a", border: "#ffffff20", text: "#666680", label: "Pending" },
 };
